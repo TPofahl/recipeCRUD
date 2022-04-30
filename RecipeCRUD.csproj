@@ -169,6 +169,7 @@
     <Content Include="Views\Recipes\Index.cshtml" />
     <Content Include="Views\Recipes\Details.cshtml" />
     <Content Include="Views\Recipes\RecipeForm.cshtml" />
+    <Content Include="Views\Recipes\SearchForm.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
