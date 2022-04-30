@@ -30,7 +30,7 @@ namespace RecipeCRUD.Controllers
 
         public ActionResult Create()
         {
-            return View("RecipeForm");
+            return View("RecipeForm", new RecipeModel());
         }
 
         public ActionResult Edit(int id)
@@ -41,6 +41,16 @@ namespace RecipeCRUD.Controllers
             return View("RecipeForm", recipe);
         }
 
+        public ActionResult Delete(int id)
+        {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            recipeDAO.Delete(id);
+
+            List<RecipeModel> recipes = recipeDAO.FetchAll();
+
+            return View("Index", recipes);
+        }
+
         public ActionResult ProcessCreate(RecipeModel recipeModel)
         {
             //Save to database
@@ -48,6 +58,27 @@ namespace RecipeCRUD.Controllers
             recipeDAO.CreateOrUpdate(recipeModel);
 
             return View("Details", recipeModel);
+        }
+
+        public ActionResult SearchForm()
+        {
+            return View("SearchForm");
+        }
+
+        public ActionResult SearchForName(string searchPhrase)
+        {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            List<RecipeModel> searchResults = recipeDAO.SearchForName(searchPhrase);
+
+            return View("Index", searchResults);
+        }
+
+        public ActionResult SearchForDescription(string searchPhrase)
+        {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            List<RecipeModel> searchResults = recipeDAO.SearchForDescription(searchPhrase);
+
+            return View("Index", searchResults);
         }
     }
 }
