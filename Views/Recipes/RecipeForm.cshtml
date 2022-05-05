@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>RecipeForm</h2>
+<h2>Edit</h2>
 
 
 @using (Html.BeginForm("ProcessCreate","Recipes")) 
@@ -13,7 +13,6 @@
     @Html.AntiForgeryToken()
     
 <div class="form-horizontal">
-    <h4>RecipeModel</h4>
     <hr />
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     <div class="form-group">
