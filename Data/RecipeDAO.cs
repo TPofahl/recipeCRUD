@@ -8,7 +8,8 @@ namespace RecipeCRUD.Data
 {
     internal class RecipeDAO
     {
-        readonly string connectionString = ConfigurationManager.ConnectionStrings["MYSQLCONNSTR_connectionstring"].ConnectionString;
+        readonly string connectionString = ConfigurationManager.ConnectionStrings["SQLCONNSTR_recipeconnectionstring"].ConnectionString;
+
 
         public List<RecipeModel> FetchAll()
         {
