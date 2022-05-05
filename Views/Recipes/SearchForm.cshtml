@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>SearchForm</h2>
+<h2>Search</h2>
 
 
 @using (Html.BeginForm("SearchForName", "Recipes"))
@@ -13,12 +13,11 @@
     @Html.AntiForgeryToken()
 
     <div class="form-horizontal">
-        <h4>RecipeModel</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
             <div class="col-md-10">
-                <label for="searchPhrase">Searh in the name</label>
+                <label for="searchPhrase">Search name</label>
                 <input type="text" name="searchPhrase" id="searchPhrase" class="form-control" />
 
             </div>
@@ -32,18 +31,16 @@
     </div>
 }
 
-<p>Search description</p>
 @using (Html.BeginForm("SearchForDescription", "Recipes"))
 {
     @Html.AntiForgeryToken()
 
     <div class="form-horizontal">
-        <h4>RecipeModel</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
             <div class="col-md-10">
-                <label for="searchPhrase">Searh in the name</label>
+                <label for="searchPhrase">Search description</label>
                 <input type="text" name="searchPhrase" id="searchPhrase" class="form-control" />
 
             </div>
