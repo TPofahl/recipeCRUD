@@ -19,8 +19,8 @@ namespace RecipeCRUD.Models
         public RecipeModel()
         {
             Id = -1;
-            Name = "Not a potato";
-            Description = "Someday I will be a potato";
+            Name = "";
+            Description = "";
         }
 
         public RecipeModel(int id, string name, string description)

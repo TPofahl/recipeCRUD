@@ -8,6 +8,7 @@ using System.Web.Mvc;
 
 namespace RecipeCRUD.Controllers
 {
+    // [Authorize]
     public class RecipesController : Controller
     {
         // GET: Recipes
@@ -20,19 +21,16 @@ namespace RecipeCRUD.Controllers
 
             return View("Index", recipes);
         }
-
         public ActionResult Details(int id)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
             RecipeModel recipe = recipeDAO.FetchOne(id);
             return View("Details", recipe);
         }
-
         public ActionResult Create()
         {
             return View("RecipeForm", new RecipeModel());
         }
-
         public ActionResult Edit(int id)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
@@ -40,7 +38,6 @@ namespace RecipeCRUD.Controllers
 
             return View("RecipeForm", recipe);
         }
-
         public ActionResult Delete(int id)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
@@ -50,7 +47,6 @@ namespace RecipeCRUD.Controllers
 
             return View("Index", recipes);
         }
-
         public ActionResult ProcessCreate(RecipeModel recipeModel)
         {
             //Save to database
@@ -59,12 +55,10 @@ namespace RecipeCRUD.Controllers
 
             return View("Details", recipeModel);
         }
-
         public ActionResult SearchForm()
         {
             return View("SearchForm");
         }
-
         public ActionResult SearchForName(string searchPhrase)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
@@ -72,7 +66,6 @@ namespace RecipeCRUD.Controllers
 
             return View("Index", searchResults);
         }
-
         public ActionResult SearchForDescription(string searchPhrase)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
