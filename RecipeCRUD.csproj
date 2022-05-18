@@ -190,6 +190,7 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\RecipeApiModel.cs" />
     <Compile Include="Models\RecipeModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -232,7 +233,6 @@
     <Content Include="Views\Recipes\Index.cshtml" />
     <Content Include="Views\Recipes\Details.cshtml" />
     <Content Include="Views\Recipes\RecipeForm.cshtml" />
-    <Content Include="Views\Recipes\SearchForm.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
     <Content Include="Views\Account\ConfirmEmail.cshtml" />

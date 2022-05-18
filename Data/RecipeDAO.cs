@@ -1,15 +1,20 @@
 ﻿using RecipeCRUD.Models;
 using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Configuration;
+using Microsoft.AspNet.Identity;
+using System.Web;
+
+using System.Diagnostics;
+using System.Net;
+using System.IO;
 
 namespace RecipeCRUD.Data
 {
     internal class RecipeDAO
     {
         readonly string connectionString = ConfigurationManager.ConnectionStrings["SQLCONNSTR_recipeconnectionstring"].ConnectionString;
-
 
         public List<RecipeModel> FetchAll()
         {
@@ -31,8 +36,11 @@ namespace RecipeCRUD.Data
                     {
                         RecipeModel recipe = new RecipeModel();
                         recipe.Id = reader.GetInt32(0);
-                        recipe.Name = reader.GetString(1);
-                        recipe.Description = reader.GetString(2);
+                        recipe.Name = reader.GetString(3);
+                        recipe.Image = reader.GetString(5);
+                        recipe.Description = reader.GetString(4);
+                        recipe.Ingredients = reader.GetString(10);
+                        recipe.Steps = reader.GetString(11);
 
                         returnList.Add(recipe);
                     }
@@ -64,15 +72,46 @@ namespace RecipeCRUD.Data
         {
             List<RecipeModel> returnList = new List<RecipeModel>();
 
+            // string strUrlTest = String.Format("https://jsonplaceholder.typicode.com/posts/1/comments");
+            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=pizza&apiKey=" + "key goes here");
+            WebRequest request = WebRequest.Create(path);
+            HttpWebResponse response = null;
+            response = (HttpWebResponse)request.GetResponse();
+
+            string result = null;
+            using (Stream stream = response.GetResponseStream())
+            {
+                StreamReader reader = new StreamReader(stream);
+                result = reader.ReadToEnd();
+                reader.Close();
+            }
+            // remove this later
+            Debug.WriteLine(result);
+
+            
+            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+
+            ComplexSearch objList = (ComplexSearch) serializer.Deserialize(result, typeof(ComplexSearch));
+            
+            foreach (results list in objList.results)
+            {
+                RecipeModel recipe = new RecipeModel();
+                recipe.Id = list.id;
+                recipe.Name = list.title;
+                recipe.Image = list.image;
+                string imageType = list.imageType;
+
+                returnList.Add(recipe);
+            }
+
+            // List<RecipeModel> returnList = new List<RecipeModel>();
             // Access database
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string sqlQuery = "SELECT * FROM dbo.Recipes WHERE NAME LIKE @searchForMe";
-
+                string sqlQuery = "SELECT * FROM dbo.Recipes WHERE TITLE LIKE @search";
 
                 SqlCommand command = new SqlCommand(sqlQuery, connection);
-                command.Parameters.Add("@searchForMe", System.Data.SqlDbType.NVarChar).Value = "%" + searchPhrase + "%";
-
+                command.Parameters.Add("@search", System.Data.SqlDbType.NVarChar).Value = "%" + searchPhrase + "%";
 
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
@@ -81,10 +120,13 @@ namespace RecipeCRUD.Data
                 {
                     while (reader.Read())
                     {
-                        RecipeModel recipe = new RecipeModel();
+                        RecipeModel recipe = new RecipeModel(); 
                         recipe.Id = reader.GetInt32(0);
-                        recipe.Name = reader.GetString(1);
-                        recipe.Description = reader.GetString(2);
+                        recipe.Name = reader.GetString(3);
+                        recipe.Image = reader.GetString(5);
+                        recipe.Description = reader.GetString(4);
+                        recipe.Ingredients = reader.GetString(10);
+                        recipe.Steps = reader.GetString(11);
 
                         returnList.Add(recipe);
                     }
@@ -117,8 +159,11 @@ namespace RecipeCRUD.Data
                     {
                         RecipeModel recipe = new RecipeModel();
                         recipe.Id = reader.GetInt32(0);
-                        recipe.Name = reader.GetString(1);
-                        recipe.Description = reader.GetString(2);
+                        recipe.Name = reader.GetString(3);
+                        recipe.Image = reader.GetString(5);
+                        recipe.Description = reader.GetString(4);
+                        recipe.Ingredients = reader.GetString(10);
+                        recipe.Steps = reader.GetString(11);
 
                         returnList.Add(recipe);
                     }
@@ -144,15 +189,16 @@ namespace RecipeCRUD.Data
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
 
-
-
                 if (reader.HasRows)
                 {
                     while (reader.Read())
                     {
                         recipe.Id = reader.GetInt32(0);
-                        recipe.Name = reader.GetString(1);
-                        recipe.Description = reader.GetString(2);
+                        recipe.Name = reader.GetString(3);
+                        recipe.Image = reader.GetString(5);
+                        recipe.Description = reader.GetString(4);
+                        recipe.Ingredients = reader.GetString(10);
+                        recipe.Steps = reader.GetString(11);
                     }
                 }
                 connection.Close();
@@ -166,11 +212,17 @@ namespace RecipeCRUD.Data
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 string sqlQuery = "";
-                Console.WriteLine(recipeModel.Id);
+                DateTime date = DateTime.ParseExact("14/06/1994", "dd/MM/yyyy", null);
+                var httpContext = HttpContext.Current;
+                var userId = httpContext.User.Identity.GetUserId();
+
+                Debug.WriteLine("This is a test 2");
+                Debug.WriteLine(userId);
+
                 if (recipeModel.Id <= 0)
                 {
                     // create
-                    sqlQuery = "INSERT INTO dbo.Recipes VALUES(@Name, @Description)";
+                    sqlQuery = "INSERT INTO dbo.Recipes VALUES(@UserId, @Recipe_ID, @Title, @Description, @Image, @Image_Type, @Is_Public, @Date_Created, @Date_Modified, @Ingredients, @Steps)";
                 } else
                 {
                     // update
@@ -180,8 +232,17 @@ namespace RecipeCRUD.Data
                 SqlCommand command = new SqlCommand(sqlQuery, connection);
 
                 command.Parameters.Add("@Id", System.Data.SqlDbType.VarChar, 1000).Value = recipeModel.Id;
-                command.Parameters.Add("@Name", System.Data.SqlDbType.VarChar, 1000).Value = recipeModel.Name;
-                command.Parameters.Add("@Description", System.Data.SqlDbType.VarChar, 1000).Value = recipeModel.Description;
+                command.Parameters.Add("@UserId", System.Data.SqlDbType.NVarChar, 1000).Value = userId;
+                command.Parameters.Add("@Recipe_ID", System.Data.SqlDbType.Char, 1000).Value = "RecipeIDhere";
+                command.Parameters.Add("@Title", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Name;
+                command.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Description;
+                command.Parameters.Add("@Image", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Image;
+                command.Parameters.Add("@Image_Type", System.Data.SqlDbType.Char, 1000).Value = recipeModel.ImageType;
+                command.Parameters.Add("@Is_Public", System.Data.SqlDbType.Int, 1000).Value = recipeModel.IsPublic;
+                command.Parameters.Add("@Date_Created", System.Data.SqlDbType.DateTime, 1000).Value = date;
+                command.Parameters.Add("@Date_Modified", System.Data.SqlDbType.DateTime, 1000).Value = date;
+                command.Parameters.Add("@Ingredients", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Ingredients;
+                command.Parameters.Add("@Steps", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Steps;
 
                 connection.Open();
                 int newID = command.ExecuteNonQuery();
