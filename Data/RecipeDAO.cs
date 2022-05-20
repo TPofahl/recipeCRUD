@@ -5,16 +5,18 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using Microsoft.AspNet.Identity;
 using System.Web;
-
 using System.Diagnostics;
 using System.Net;
 using System.IO;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace RecipeCRUD.Data
 {
     internal class RecipeDAO
     {
         readonly string connectionString = ConfigurationManager.ConnectionStrings["SQLCONNSTR_recipeconnectionstring"].ConnectionString;
+        List<RecipeModel> returnList = new List<RecipeModel>();
 
         public List<RecipeModel> FetchAll()
         {
@@ -70,13 +72,11 @@ namespace RecipeCRUD.Data
 
         internal List<RecipeModel> SearchForName(string searchPhrase)
         {
-            List<RecipeModel> returnList = new List<RecipeModel>();
+            // List<RecipeModel> returnList = new List<RecipeModel>();
 
-            // string strUrlTest = String.Format("https://jsonplaceholder.typicode.com/posts/1/comments");
-            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=pizza&apiKey=" + "key goes here");
+            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=2&apiKey=" + "api key here");
             WebRequest request = WebRequest.Create(path);
-            HttpWebResponse response = null;
-            response = (HttpWebResponse)request.GetResponse();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
             string result = null;
             using (Stream stream = response.GetResponseStream())
@@ -85,12 +85,8 @@ namespace RecipeCRUD.Data
                 result = reader.ReadToEnd();
                 reader.Close();
             }
-            // remove this later
-            Debug.WriteLine(result);
-
             
             var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-
             ComplexSearch objList = (ComplexSearch) serializer.Deserialize(result, typeof(ComplexSearch));
             
             foreach (results list in objList.results)
@@ -99,12 +95,13 @@ namespace RecipeCRUD.Data
                 recipe.Id = list.id;
                 recipe.Name = list.title;
                 recipe.Image = list.image;
+                recipe.IsFromApi = true;
                 string imageType = list.imageType;
+                
 
                 returnList.Add(recipe);
             }
 
-            // List<RecipeModel> returnList = new List<RecipeModel>();
             // Access database
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -127,6 +124,7 @@ namespace RecipeCRUD.Data
                         recipe.Description = reader.GetString(4);
                         recipe.Ingredients = reader.GetString(10);
                         recipe.Steps = reader.GetString(11);
+                        recipe.IsFromApi = false;
 
                         returnList.Add(recipe);
                     }
@@ -136,72 +134,68 @@ namespace RecipeCRUD.Data
             return returnList;
         }
 
-        internal List<RecipeModel> SearchForDescription(string searchPhrase)
+        public RecipeModel FetchOne(int id, bool isFromApi)
         {
-            List<RecipeModel> returnList = new List<RecipeModel>();
-
-            // Access database
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                string sqlQuery = "SELECT * FROM dbo.Recipes WHERE DESCRIPTION LIKE @searchForMe";
-                 
-
-                SqlCommand command = new SqlCommand(sqlQuery, connection);
-                command.Parameters.Add("@searchForMe", System.Data.SqlDbType.NVarChar).Value = "%" + searchPhrase + "%";
-
-
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        RecipeModel recipe = new RecipeModel();
-                        recipe.Id = reader.GetInt32(0);
-                        recipe.Name = reader.GetString(3);
-                        recipe.Image = reader.GetString(5);
-                        recipe.Description = reader.GetString(4);
-                        recipe.Ingredients = reader.GetString(10);
-                        recipe.Steps = reader.GetString(11);
-
-                        returnList.Add(recipe);
-                    }
-                }
-                connection.Close();
-            }
-            return returnList;
-        }
-
-        public RecipeModel FetchOne(int id)
-        {
+            int listIdx = returnList.FindIndex(x => x.Id == id);
             RecipeModel recipe = new RecipeModel();
+            JToken JResult = "";
+            string result = null;
+            var test = new List<string>();
+            int idx = 0;
+            Debug.WriteLine(returnList[0]);
 
-            // Access database
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (isFromApi)
             {
-                string sqlQuery = "SELECT * FROM dbo.Recipes WHERE Id = @id";
+                // Get details from selected recipe api
+                string path = string.Format("https://api.spoonacular.com/recipes/" + id + "/analyzedInstructions?apiKey= api key here");
+                WebRequest request = WebRequest.Create(path);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                SqlCommand command = new SqlCommand(sqlQuery, connection);
-
-                command.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
-
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.HasRows)
+                using (Stream stream = response.GetResponseStream())
                 {
-                    while (reader.Read())
-                    {
-                        recipe.Id = reader.GetInt32(0);
-                        recipe.Name = reader.GetString(3);
-                        recipe.Image = reader.GetString(5);
-                        recipe.Description = reader.GetString(4);
-                        recipe.Ingredients = reader.GetString(10);
-                        recipe.Steps = reader.GetString(11);
-                    }
+                    StreamReader reader = new StreamReader(stream);
+                    result = reader.ReadToEnd();
+                    reader.Close();
                 }
-                connection.Close();
+
+                JArray resultParsed = JArray.Parse(result);
+                while (JResult != null)
+                {
+                    JResult = resultParsed.SelectToken("$..steps[" + idx + "].step");
+                    test.Add((string)JResult);
+                    idx++;
+                }
+                recipe.Steps = String.Join("|", test.ToArray());
+            }
+            else
+            {
+                // Access database if not from api call
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    // RecipeModel recipe = new RecipeModel();
+                    string sqlQuery = "SELECT * FROM dbo.Recipes WHERE Id = @id";
+
+                    SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                    command.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
+
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            recipe.Id = reader.GetInt32(0);
+                            recipe.Name = reader.GetString(3);
+                            recipe.Image = reader.GetString(5);
+                            recipe.Description = reader.GetString(4);
+                            recipe.Ingredients = reader.GetString(10);
+                            recipe.Steps = reader.GetString(11);
+                        }
+                    }
+                    connection.Close();
+                }
             }
             return recipe;
         }
@@ -216,7 +210,6 @@ namespace RecipeCRUD.Data
                 var httpContext = HttpContext.Current;
                 var userId = httpContext.User.Identity.GetUserId();
 
-                Debug.WriteLine("This is a test 2");
                 Debug.WriteLine(userId);
 
                 if (recipeModel.Id <= 0)

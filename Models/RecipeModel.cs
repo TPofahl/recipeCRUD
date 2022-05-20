@@ -24,6 +24,7 @@ namespace RecipeCRUD.Models
         public string ImageType { get; set; }
         [Required]
         public int IsPublic { get; set; }
+        public bool IsFromApi { get; set; }
         [Required]
         public string Steps { get; set; }
 
@@ -38,6 +39,7 @@ namespace RecipeCRUD.Models
             Image = "https://spoonacular.com/recipeImages/654958-312x231.jpg";
             ImageType = "jpg";
             IsPublic = 1;
+            IsFromApi = false;
             Ingredients = "";
             Steps = "";
         }
@@ -51,6 +53,7 @@ namespace RecipeCRUD.Models
             Image = "https://spoonacular.com/recipeImages/654958-312x231.jpg";
             ImageType = "jpg";
             IsPublic = 1;
+            IsFromApi= false;
             Ingredients = ingredients;
             Steps = steps;
         }

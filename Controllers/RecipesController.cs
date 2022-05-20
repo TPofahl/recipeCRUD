@@ -21,20 +21,21 @@ namespace RecipeCRUD.Controllers
 
             return View("Index", recipes);
         }
-        public ActionResult Details(int id)
+
+        public ActionResult Details(int id, bool isFromApi)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
-            RecipeModel recipe = recipeDAO.FetchOne(id);
+            RecipeModel recipe = recipeDAO.FetchOne(id, isFromApi);
             return View("Details", recipe);
         }
         public ActionResult Create()
         {
             return View("RecipeForm", new RecipeModel());
         }
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, bool isFromApi)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
-            RecipeModel recipe = recipeDAO.FetchOne(id);
+            RecipeModel recipe = recipeDAO.FetchOne(id, isFromApi);
 
             return View("RecipeForm", recipe);
         }
@@ -63,13 +64,6 @@ namespace RecipeCRUD.Controllers
         {
             RecipeDAO recipeDAO = new RecipeDAO();
             List<RecipeModel> searchResults = recipeDAO.SearchForName(searchPhrase);
-
-            return View("Index", searchResults);
-        }
-        public ActionResult SearchForDescription(string searchPhrase)
-        {
-            RecipeDAO recipeDAO = new RecipeDAO();
-            List<RecipeModel> searchResults = recipeDAO.SearchForDescription(searchPhrase);
 
             return View("Index", searchResults);
         }
