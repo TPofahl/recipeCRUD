@@ -72,32 +72,48 @@ namespace RecipeCRUD.Data
 
         internal List<RecipeModel> SearchForName(string searchPhrase)
         {
+            string result = null;
+            var steps = new List<string>();
             // List<RecipeModel> returnList = new List<RecipeModel>();
 
-            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=2&apiKey=" + "api key here");
+            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=2&addRecipeInformation=true&apiKey=fba9ad0f04cd4a80ab1fa9e872103503");
             WebRequest request = WebRequest.Create(path);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-            string result = null;
             using (Stream stream = response.GetResponseStream())
             {
                 StreamReader reader = new StreamReader(stream);
                 result = reader.ReadToEnd();
                 reader.Close();
             }
-            
-            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-            ComplexSearch objList = (ComplexSearch) serializer.Deserialize(result, typeof(ComplexSearch));
-            
-            foreach (results list in objList.results)
+
+            JObject resultParsed = JObject.Parse(result);
+            JArray list = (JArray)resultParsed["results"];
+            int listLength = list.Count();
+
+            //Step through each recipe, and save recipe instructions
+            for (int i = 0; i < listLength; i++)
             {
                 RecipeModel recipe = new RecipeModel();
-                recipe.Id = list.id;
-                recipe.Name = list.title;
-                recipe.Image = list.image;
+
+                JObject objA = (JObject)list[i];
+                JArray arrA = (JArray)objA["analyzedInstructions"];
+                JObject objB = (JObject)arrA[0];
+                JArray arrB = (JArray)objB["steps"];
+                int stepLength = arrB.Count();
+
+                for (int j = 0; j < stepLength; j++)
+                    {
+                        JToken JResult = resultParsed.SelectToken("$..results.analyzedInstructions[" + i + "].steps[" + j + "].step");
+                        steps.Add((string)JResult);
+                    }
+
+                recipe.Id = (int)resultParsed.SelectToken("$..results[" + i + "].id");
+                recipe.Name = (string)resultParsed.SelectToken("$..results[" + i + "].title");
+                recipe.Image = (string)resultParsed.SelectToken("$..results[" + i + "].image");
+                recipe.Description = (string)resultParsed.SelectToken("$..results[" + i + "].summary");
+                recipe.Steps = String.Join("|", steps.ToArray());
                 recipe.IsFromApi = true;
-                string imageType = list.imageType;
-                
 
                 returnList.Add(recipe);
             }
@@ -142,7 +158,6 @@ namespace RecipeCRUD.Data
             string result = null;
             var test = new List<string>();
             int idx = 0;
-            Debug.WriteLine(returnList[0]);
 
             if (isFromApi)
             {

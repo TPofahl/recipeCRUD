@@ -24,8 +24,8 @@ namespace RecipeCRUD.Controllers
 
         public ActionResult Details(int id, bool isFromApi)
         {
-            RecipeDAO recipeDAO = new RecipeDAO();
-            RecipeModel recipe = recipeDAO.FetchOne(id, isFromApi);
+            // RecipeDAO recipeDAO = new RecipeDAO();
+            RecipeModel recipe = RecipeDAO.FetchOne(id, isFromApi);
             return View("Details", recipe);
         }
         public ActionResult Create()
