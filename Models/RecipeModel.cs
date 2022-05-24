@@ -12,6 +12,7 @@ namespace RecipeCRUD.Models
         public int Id { get; set; }
         [Required]
         public string UserId { get; set; }
+        public int SpoonacularId { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
@@ -34,6 +35,7 @@ namespace RecipeCRUD.Models
         {
             Id = -1;
             UserId = "";
+            SpoonacularId = -1;
             Name = "";
             Description = "";
             Image = "https://spoonacular.com/recipeImages/654958-312x231.jpg";
@@ -48,6 +50,7 @@ namespace RecipeCRUD.Models
         {
             Id = id;
             UserId = "";
+            SpoonacularId = -1;
             Name = name;
             Description = description;
             Image = "https://spoonacular.com/recipeImages/654958-312x231.jpg";

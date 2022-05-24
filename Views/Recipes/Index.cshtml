@@ -32,12 +32,12 @@
     <td>
         @if (item.IsFromApi == true)
         {
-            @Html.ActionLink("Details", "Details", new { id = item.Id, isFromApi = item.IsFromApi })
+            @Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi })
         }
         else
         {
             @Html.ActionLink("Edit", "Edit", new { id = item.Id })
-            @Html.ActionLink("Details", "Details", new { id = item.Id, isFromApi = item.IsFromApi })
+            @Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi })
             @Html.ActionLink("Delete", "Delete", new { id = item.Id })
         }
     </td>

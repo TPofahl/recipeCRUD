@@ -10,6 +10,7 @@ using System.Net;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using System.Collections;
 
 namespace RecipeCRUD.Data
 {
@@ -74,9 +75,9 @@ namespace RecipeCRUD.Data
         {
             string result = null;
             var steps = new List<string>();
-            // List<RecipeModel> returnList = new List<RecipeModel>();
+            var ingredients = new List<string>();
 
-            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=2&addRecipeInformation=true&apiKey=fba9ad0f04cd4a80ab1fa9e872103503");
+            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=100&addRecipeInformation=true&apiKey=fba9ad0f04cd4a80ab1fa9e872103503");
             WebRequest request = WebRequest.Create(path);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
@@ -91,7 +92,7 @@ namespace RecipeCRUD.Data
             JArray list = (JArray)resultParsed["results"];
             int listLength = list.Count();
 
-            //Step through each recipe, and save recipe instructions
+            // Step through each recipe, and save recipe instructions
             for (int i = 0; i < listLength; i++)
             {
                 RecipeModel recipe = new RecipeModel();
@@ -100,19 +101,31 @@ namespace RecipeCRUD.Data
                 JArray arrA = (JArray)objA["analyzedInstructions"];
                 JObject objB = (JObject)arrA[0];
                 JArray arrB = (JArray)objB["steps"];
-                int stepLength = arrB.Count();
+                JObject objC = (JObject)arrB[0];
+                JArray arrC = (JArray)objC["ingredients"];
 
-                for (int j = 0; j < stepLength; j++)
+                // Find all steps
+                foreach (JObject obj in arrB)
+                {
+                    steps.Add(obj["step"].ToString());
+                }
+                // Find all ingredients, exclude duplicates
+                foreach (JObject obj in arrC)
+                {
+                    string ingredient = obj["name"].ToString();
+                    if (ingredients.Contains(ingredient) == false)
                     {
-                        JToken JResult = resultParsed.SelectToken("$..results.analyzedInstructions[" + i + "].steps[" + j + "].step");
-                        steps.Add((string)JResult);
+                        ingredients.Add(ingredient.ToString());
                     }
+                }
 
-                recipe.Id = (int)resultParsed.SelectToken("$..results[" + i + "].id");
+                recipe.Id = -1;
+                recipe.SpoonacularId = (int)resultParsed.SelectToken("$..results[" + i + "].id");
                 recipe.Name = (string)resultParsed.SelectToken("$..results[" + i + "].title");
                 recipe.Image = (string)resultParsed.SelectToken("$..results[" + i + "].image");
                 recipe.Description = (string)resultParsed.SelectToken("$..results[" + i + "].summary");
                 recipe.Steps = String.Join("|", steps.ToArray());
+                recipe.Ingredients = String.Join ("|", ingredients.ToArray());
                 recipe.IsFromApi = true;
 
                 returnList.Add(recipe);
@@ -150,48 +163,31 @@ namespace RecipeCRUD.Data
             return returnList;
         }
 
-        public RecipeModel FetchOne(int id, bool isFromApi)
+        public RecipeModel FetchOne(int id, int spoonacularId, bool isFromApi)
         {
-            int listIdx = returnList.FindIndex(x => x.Id == id);
             RecipeModel recipe = new RecipeModel();
-            JToken JResult = "";
-            string result = null;
-            var test = new List<string>();
-            int idx = 0;
 
-            if (isFromApi)
+            List<RecipeModel> recipeList = (List<RecipeModel>)HttpContext.Current.Session["recipeState"];
+            RecipeModel selected = recipeList.First(x => x.SpoonacularId == spoonacularId);
+            HttpContext.Current.Session["selectedState"] = selected;
+
+            if (selected.IsFromApi)
             {
-                // Get details from selected recipe api
-                string path = string.Format("https://api.spoonacular.com/recipes/" + id + "/analyzedInstructions?apiKey= api key here");
-                WebRequest request = WebRequest.Create(path);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                using (Stream stream = response.GetResponseStream())
-                {
-                    StreamReader reader = new StreamReader(stream);
-                    result = reader.ReadToEnd();
-                    reader.Close();
-                }
-
-                JArray resultParsed = JArray.Parse(result);
-                while (JResult != null)
-                {
-                    JResult = resultParsed.SelectToken("$..steps[" + idx + "].step");
-                    test.Add((string)JResult);
-                    idx++;
-                }
-                recipe.Steps = String.Join("|", test.ToArray());
+                recipe.Id = selected.Id;
+                recipe.SpoonacularId = selected.SpoonacularId;
+                recipe.Name = selected.Name;
+                recipe.Image = selected.Image;
+                recipe.Description = selected.Description;
+                recipe.Ingredients = selected.Ingredients;
+                recipe.Steps = selected.Steps;
+                recipe.IsFromApi = selected.IsFromApi;
             }
             else
             {
-                // Access database if not from api call
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    // RecipeModel recipe = new RecipeModel();
                     string sqlQuery = "SELECT * FROM dbo.Recipes WHERE Id = @id";
-
                     SqlCommand command = new SqlCommand(sqlQuery, connection);
-
                     command.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
 
                     connection.Open();
@@ -207,6 +203,7 @@ namespace RecipeCRUD.Data
                             recipe.Description = reader.GetString(4);
                             recipe.Ingredients = reader.GetString(10);
                             recipe.Steps = reader.GetString(11);
+                            recipe.IsFromApi = selected.IsFromApi;
                         }
                     }
                     connection.Close();
@@ -225,12 +222,11 @@ namespace RecipeCRUD.Data
                 var httpContext = HttpContext.Current;
                 var userId = httpContext.User.Identity.GetUserId();
 
-                Debug.WriteLine(userId);
-
                 if (recipeModel.Id <= 0)
                 {
                     // create
                     sqlQuery = "INSERT INTO dbo.Recipes VALUES(@UserId, @Recipe_ID, @Title, @Description, @Image, @Image_Type, @Is_Public, @Date_Created, @Date_Modified, @Ingredients, @Steps)";
+                    recipeModel = (RecipeModel)HttpContext.Current.Session["selectedState"];
                 } else
                 {
                     // update
@@ -241,7 +237,7 @@ namespace RecipeCRUD.Data
 
                 command.Parameters.Add("@Id", System.Data.SqlDbType.VarChar, 1000).Value = recipeModel.Id;
                 command.Parameters.Add("@UserId", System.Data.SqlDbType.NVarChar, 1000).Value = userId;
-                command.Parameters.Add("@Recipe_ID", System.Data.SqlDbType.Char, 1000).Value = "RecipeIDhere";
+                command.Parameters.Add("@Recipe_ID", System.Data.SqlDbType.Char, 1000).Value = recipeModel.SpoonacularId;
                 command.Parameters.Add("@Title", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Name;
                 command.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Description;
                 command.Parameters.Add("@Image", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Image;
@@ -255,6 +251,7 @@ namespace RecipeCRUD.Data
                 connection.Open();
                 int newID = command.ExecuteNonQuery();
                 connection.Close();
+                HttpContext.Current.Session["selectedState"] = null;
 
                 return newID;
             }
