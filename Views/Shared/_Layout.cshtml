@@ -21,13 +21,74 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("Show Recipes", "Index", "Recipes")</li>
-                    <li>@Html.ActionLink("Search", "SearchForm", "Recipes")</li>
+                    <li>@Html.ActionLink("Explore", "Index", "Recipes")</li>
+                    <li>@Html.ActionLink("My Recipes", "Index", "Recipes")</li>
                 </ul>
+                @Html.Partial("_LoginPartial")
             </div>
         </div>
     </div>
+
     <div class="container body-content">
+
+        @using (Html.BeginForm("SearchForName", "Recipes"))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <label for="searchPhrase">Search name</label>
+                        <input type="text" name="searchPhrase" id="searchPhrase" class="form-control" />
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Search" class="btn btn-default" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        @using (Html.BeginForm("SearchForDescription", "Recipes"))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <label for="searchPhrase">Search description</label>
+                        <input type="text" name="searchPhrase" id="searchPhrase" class="form-control" />
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Search" class="btn btn-default" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        @using (Html.BeginForm("Index", "Recipes"))
+        {
+            @Html.AntiForgeryToken()
+
+                <hr />
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Reset" class="btn btn-default" />
+                    </div>
+                </div>
+        }
+
         @RenderBody()
         <hr />
         <footer>

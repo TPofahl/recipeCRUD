@@ -2,12 +2,14 @@
 using RecipeCRUD.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
 namespace RecipeCRUD.Controllers
 {
+    // [Authorize]
     public class RecipesController : Controller
     {
         // GET: Recipes
@@ -16,69 +18,60 @@ namespace RecipeCRUD.Controllers
             List<RecipeModel> recipes = new List<RecipeModel>();
             RecipeDAO recipeDAO = new RecipeDAO();
 
-            recipes = recipeDAO.FetchAll();
+            if (Session["recipeState"] == null)
+            {
+                Session["recipeState"] = recipeDAO.FetchAll();
+                recipes = (List<RecipeModel>)Session["recipeState"];
+            } else
+            {
+                recipes = (List<RecipeModel>)Session["recipeState"];
+            }
 
             return View("Index", recipes);
         }
-
-        public ActionResult Details(int id)
-        {
-            RecipeDAO recipeDAO = new RecipeDAO();
-            RecipeModel recipe = recipeDAO.FetchOne(id);
-            return View("Details", recipe);
-        }
-
         public ActionResult Create()
         {
             return View("RecipeForm", new RecipeModel());
         }
-
-        public ActionResult Edit(int id)
-        {
-            RecipeDAO recipeDAO = new RecipeDAO();
-            RecipeModel recipe = recipeDAO.FetchOne(id);
-
-            return View("RecipeForm", recipe);
-        }
-
         public ActionResult Delete(int id)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
             recipeDAO.Delete(id);
 
-            List<RecipeModel> recipes = recipeDAO.FetchAll();
+            Session["recipeState"] = recipeDAO.FetchAll();
 
-            return View("Index", recipes);
+            return View("Index", Session["recipeState"]);
         }
+        public ActionResult Details(int id, int spoonacularId, bool isFromApi)
+        {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            RecipeModel recipe = recipeDAO.FetchOne(id, spoonacularId, isFromApi);
+            return View("Details", recipe);
+        }
+        public ActionResult Edit(int id, int spoonacularId, bool isFromApi)
+        {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            RecipeModel recipe = recipeDAO.FetchOne(id, spoonacularId, isFromApi);
 
+            return View("RecipeForm", recipe);
+        }
         public ActionResult ProcessCreate(RecipeModel recipeModel)
         {
+            RecipeDAO recipeDAO = new RecipeDAO();
             //Save to database
-            RecipeDAO recipeDAO= new RecipeDAO();
             recipeDAO.CreateOrUpdate(recipeModel);
-
-            return View("Details", recipeModel);
+            return View("Index", Session["recipeState"]);
         }
-
         public ActionResult SearchForm()
         {
             return View("SearchForm");
         }
-
         public ActionResult SearchForName(string searchPhrase)
         {
             RecipeDAO recipeDAO = new RecipeDAO();
-            List<RecipeModel> searchResults = recipeDAO.SearchForName(searchPhrase);
+            Session["recipeState"] = recipeDAO.SearchForName(searchPhrase);
 
-            return View("Index", searchResults);
-        }
-
-        public ActionResult SearchForDescription(string searchPhrase)
-        {
-            RecipeDAO recipeDAO = new RecipeDAO();
-            List<RecipeModel> searchResults = recipeDAO.SearchForDescription(searchPhrase);
-
-            return View("Index", searchResults);
+            return View("Index", Session["RecipeState"]);
         }
     }
 }
