@@ -62,6 +62,14 @@ namespace RecipeCRUD.Controllers
             recipeDAO.CreateOrUpdate(recipeModel);
             return View("Index", Session["recipeState"]);
         }
+        public ActionResult Reset()
+        {
+            List<RecipeModel> recipes = new List<RecipeModel>();
+            RecipeDAO recipeDAO = new RecipeDAO();
+            Session["recipeState"] = recipeDAO.FetchAll();
+            recipes = (List<RecipeModel>)Session["recipeState"];
+            return View("Index", recipes);
+        }
         public ActionResult SearchForm()
         {
             return View("SearchForm");

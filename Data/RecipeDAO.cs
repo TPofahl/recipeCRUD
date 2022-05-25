@@ -17,6 +17,7 @@ namespace RecipeCRUD.Data
     internal class RecipeDAO
     {
         readonly string connectionString = ConfigurationManager.ConnectionStrings["SQLCONNSTR_recipeconnectionstring"].ConnectionString;
+        readonly string spoonacularKey = ConfigurationManager.AppSettings["KEY_spoonacular"];
         List<RecipeModel> returnList = new List<RecipeModel>();
 
         public List<RecipeModel> FetchAll()
@@ -73,11 +74,12 @@ namespace RecipeCRUD.Data
 
         internal List<RecipeModel> SearchForName(string searchPhrase)
         {
+            if (searchPhrase == "")
+            {
+                return (List<RecipeModel>)HttpContext.Current.Session["recipeState"];
+            }
             string result = null;
-            var steps = new List<string>();
-            var ingredients = new List<string>();
-
-            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=100&addRecipeInformation=true&apiKey=fba9ad0f04cd4a80ab1fa9e872103503");
+            string path = string.Format("https://api.spoonacular.com/recipes/complexSearch?query=" + searchPhrase + "&number=100&addRecipeInformation=true&apiKey=" + spoonacularKey);
             WebRequest request = WebRequest.Create(path);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
@@ -90,45 +92,49 @@ namespace RecipeCRUD.Data
 
             JObject resultParsed = JObject.Parse(result);
             JArray list = (JArray)resultParsed["results"];
-            int listLength = list.Count();
 
             // Step through each recipe, and save recipe instructions
-            for (int i = 0; i < listLength; i++)
+            for (int i = 0; i < list.Count(); i++)
             {
                 RecipeModel recipe = new RecipeModel();
+                var steps = new List<string>();
+                var ingredients = new List<string>();
 
                 JObject objA = (JObject)list[i];
                 JArray arrA = (JArray)objA["analyzedInstructions"];
-                JObject objB = (JObject)arrA[0];
-                JArray arrB = (JArray)objB["steps"];
-                JObject objC = (JObject)arrB[0];
-                JArray arrC = (JArray)objC["ingredients"];
+                // Some recipes from the API do not have instructions, exclude from results.
+                if (arrA.HasValues)
+                {
+                    JObject objB = (JObject)arrA[0];
+                    JArray arrB = (JArray)objB["steps"];
+                    JObject objC = (JObject)arrB[0];
+                    JArray arrC = (JArray)objC["ingredients"];
 
-                // Find all steps
-                foreach (JObject obj in arrB)
-                {
-                    steps.Add(obj["step"].ToString());
-                }
-                // Find all ingredients, exclude duplicates
-                foreach (JObject obj in arrC)
-                {
-                    string ingredient = obj["name"].ToString();
-                    if (ingredients.Contains(ingredient) == false)
+                    // Find all steps
+                    foreach (JObject obj in arrB)
                     {
-                        ingredients.Add(ingredient.ToString());
+                        steps.Add(obj["step"].ToString());
                     }
+                    // Find all ingredients, exclude duplicates
+                    foreach (JObject obj in arrC)
+                    {
+                        string ingredient = obj["name"].ToString();
+                        if (ingredients.Contains(ingredient) == false)
+                        {
+                            ingredients.Add(ingredient.ToString());
+                        }
+                    }
+                    recipe.Id = -1;
+                    recipe.SpoonacularId = (int)resultParsed.SelectToken("$..results[" + i + "].id");
+                    recipe.Name = (string)resultParsed.SelectToken("$..results[" + i + "].title");
+                    recipe.Image = (string)resultParsed.SelectToken("$..results[" + i + "].image");
+                    recipe.Description = (string)resultParsed.SelectToken("$..results[" + i + "].summary");
+                    recipe.Steps = String.Join("|", steps.ToArray());
+                    recipe.Ingredients = String.Join("|", ingredients.ToArray());
+                    recipe.IsFromApi = true;
+
+                    returnList.Add(recipe);
                 }
-
-                recipe.Id = -1;
-                recipe.SpoonacularId = (int)resultParsed.SelectToken("$..results[" + i + "].id");
-                recipe.Name = (string)resultParsed.SelectToken("$..results[" + i + "].title");
-                recipe.Image = (string)resultParsed.SelectToken("$..results[" + i + "].image");
-                recipe.Description = (string)resultParsed.SelectToken("$..results[" + i + "].summary");
-                recipe.Steps = String.Join("|", steps.ToArray());
-                recipe.Ingredients = String.Join ("|", ingredients.ToArray());
-                recipe.IsFromApi = true;
-
-                returnList.Add(recipe);
             }
 
             // Access database
@@ -239,14 +245,14 @@ namespace RecipeCRUD.Data
                 command.Parameters.Add("@UserId", System.Data.SqlDbType.NVarChar, 1000).Value = userId;
                 command.Parameters.Add("@Recipe_ID", System.Data.SqlDbType.Char, 1000).Value = recipeModel.SpoonacularId;
                 command.Parameters.Add("@Title", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Name;
-                command.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Description;
+                command.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = recipeModel.Description;
                 command.Parameters.Add("@Image", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Image;
                 command.Parameters.Add("@Image_Type", System.Data.SqlDbType.Char, 1000).Value = recipeModel.ImageType;
                 command.Parameters.Add("@Is_Public", System.Data.SqlDbType.Int, 1000).Value = recipeModel.IsPublic;
                 command.Parameters.Add("@Date_Created", System.Data.SqlDbType.DateTime, 1000).Value = date;
                 command.Parameters.Add("@Date_Modified", System.Data.SqlDbType.DateTime, 1000).Value = date;
                 command.Parameters.Add("@Ingredients", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Ingredients;
-                command.Parameters.Add("@Steps", System.Data.SqlDbType.NVarChar, 1000).Value = recipeModel.Steps;
+                command.Parameters.Add("@Steps", System.Data.SqlDbType.NVarChar).Value = recipeModel.Steps;
 
                 connection.Open();
                 int newID = command.ExecuteNonQuery();
