@@ -1,13 +1,13 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
+    width: 100vw;
 }
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
     color: blue;
+    width: 100vw;
 }
 
 /* Override the default bootstrap behavior where horizontal description lists 
@@ -22,4 +22,102 @@ input,
 select,
 textarea {
     max-width: 280px;
+}
+
+.navbar-container {
+    display: flex;
+}
+
+.navbar-icon {
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+.recipe-container {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    background-color: #032D29;
+    border: solid;
+    border-width: thick;
+    border-radius: 40px;
+    color: #10B580;
+    padding: 10px;
+    margin: 0px 5px 10px 5px;
+    width: 350px;
+    height: 360px;
+}
+
+.recipe-container-text {
+    color: white;
+    overflow: auto;
+    margin: 5px 0px 5px 0px;
+}
+
+.recipe-area {
+    width: 100vw;
+    justify-content: space-evenly;
+}
+
+.recipe-grid {
+    margin: 10px;
+}
+
+.recipe-image {
+    border-radius: 10px;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0px 25px 0px 25px;
+}
+
+.btn-edit {
+    background-color: #C4C90C;
+    border-color: #E9EF0B;
+    border-radius: 4px;
+    font-size: medium;
+    width: 80px;
+    height: 40px;
+}
+
+.btn-delete {
+    background-color: #D92B0D;
+    border-color: #AB2109;
+    border-radius: 4px;
+    font-size: medium;
+    width: 80px;
+    height: 40px;
+}
+
+.btn-details {
+    background-color: #4BD111;
+    border-color: greenyellow;
+    border-radius: 4px;
+    font-size: medium;
+    width: 80px;
+    height: 40px;
+}
+
+.navbar-icon {
+    margin-top: 5px;
+}
+
+.page-body {
+    background-color: tan;
+    position: relative;
+    width: 100vw;
+    min-height: 90vh;
+}
+
+.shared-footer {
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    color: #10B580;
+    background-color: #032D29;
+    padding: 10px 0px 4px 4px;
 }

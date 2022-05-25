@@ -36,40 +36,33 @@
     <p>
         @Html.ActionLink("Create New", "Create")
     </p>
-    <table class="table table-bordered table-striped table-hover">
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Image)
-            </th>
-            <th></th>
-        </tr>
-
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    <img src="@Url.Content(item.Image)" />
-                </td>
-                <td>
-                    @if (item.IsFromApi == true)
-                    {
-                        @Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi })
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Edit", "Edit", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi })
-                        @Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi })
-                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-                    }
-                </td>
-            </tr>
-        }
-
-    </table>
+    <div class="recipe-area">
+        <div class="recipe-grid">
+            @{int i = 0;}
+            @foreach (var item in Model)
+            {
+                if (i > 0 && i % 2 == 0)
+                {
+                @:</div><div class="recipe-grid">
+                }
+                <div class="recipe-container col-xs-6 col-sm-4">
+                    <img class="recipe-image" src="@Url.Content(item.Image)" width="312" height="231" />
+                    <a class="recipe-container-text">@Html.DisplayFor(modelItem => item.Name)</a>
+                    <div class="btn-container">
+                        @if (item.IsFromApi)
+                        {
+                            <button class="btn-details">@Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
+                        }
+                        else
+                        {
+                            <button class="btn-details">@Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
+                            <button class="btn-edit">@Html.ActionLink("Edit", "Edit", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
+                            <button class="btn-delete">@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "recipe-container-text" })</button>
+                        }
+                    </div>
+                </div>
+                i++;
+            }
+        </div>
+    </div>
 </div>
