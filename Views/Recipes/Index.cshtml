@@ -11,23 +11,17 @@
     {
         @Html.AntiForgeryToken()
 
-        <div>
-            <hr />
+        <div class="search-container">
             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-            <div class="form-group">
-                <div class="col-md-10">
-                    <label for="searchPhrase">Search name</label>
-                    <input type="text" name="searchPhrase" id="searchPhrase" class="form-control" />
-
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-offset-2 col-md-10">
+            <div class="search-controls">
+                <div class="searchbar">
+                    <input type="text" name="searchPhrase" id="searchPhrase" class="form-control" style="width: 250px; margin-right: 5px;" />
                     <input type="submit" value="Search" class="btn btn-default" />
                 </div>
-                @Html.ActionLink("Reset", "Reset")
-                @Html.ActionLink("Create New", "Create")
+                <div class="search-buttons">
+                    <button class="btn btn-default" style="margin-right: 5px;">@Html.ActionLink("Reset", "Reset", new { @class = "recipe-container-text" })</button>
+                    <button class="btn btn-default">@Html.ActionLink("Create New Recipe", "Create", new { @class = "recipe-container-text" })</button>
+                </div>
             </div>
         </div>
     }
