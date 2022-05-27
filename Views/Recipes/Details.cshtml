@@ -5,55 +5,57 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Details</h2>
+<div class="page-body">
+    <h2>Details</h2>
 
-<div>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Name)
-        </dd>
+    <div>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Name)
+            </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Image)
-        </dt>
-        <dd>
-            <img src="@Url.Content(Model.Image)" />
-        </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Image)
+            </dt>
+            <dd>
+                <img src="@Url.Content(Model.Image)" />
+            </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Description)
-        </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Description)
+            </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Ingredients)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Ingredients)
-        </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Ingredients)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Ingredients)
+            </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Steps)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Steps)
-        </dd>
-    </dl>
+            <dt>
+                @Html.DisplayNameFor(model => model.Steps)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Steps)
+            </dd>
+        </dl>
+    </div>
+    <p>
+        @if (Model.IsFromApi)
+        {
+            @Html.ActionLink("Save", "ProcessCreate", new { id = Model.Id })
+        }
+        else
+        {
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Id })
+        }
+        @Html.ActionLink("Back to List", "Index")
+    </p>
 </div>
-<p>
-    @if (Model.IsFromApi)
-    {
-        @Html.ActionLink("Save", "ProcessCreate", new { id = Model.Id })
-    }
-    else
-    {
-        @Html.ActionLink("Edit", "Edit", new { id = Model.Id })
-    }
-    @Html.ActionLink("Back to List", "Index")
-</p>

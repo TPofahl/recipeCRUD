@@ -2,10 +2,18 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="page-body">
-    <h1>Recipe App</h1>
-    <p class="lead">This app is made with ASP.NET 4.7.2. This app (in the future) will allow users to log in, create/read/update/delete their recipes. Users will also be able to 
-    keep their recipes private, allowing certain users to view their shared collection. Recipes will be displayed public as an option. In the future, I plan on using a recipe API to give users more options on public recipes 
-    that they can reference and save.</p>
-    <p>This app is made with IIS as the web server, and Azure's Platform as a Service (PaaS).</p>
+<div class="page-body" style="max-width: 95vw;">
+    <div>
+        <h1>Recipe App</h1>
+        <p class="lead">
+            This app is made with ASP.NET 4.7.2, and hosted on Azure. This app allows users to log in, create/read/update/delete their recipes. Users will be able to
+            keep their recipes private (not yet), allowing certain users to view their shared collection. Recipes will be displayed public as an option.
+        </p>
+        <p class="lead">This app is made with IIS as the web server, and Azure's Platform as a Service (PaaS).</p>
+        <p class="lead">You must be logged in to use this app. Users can log in with either username/password, or Google/Facebook authentication.</p>
+        <p class="lead">
+            When searching, recipes available from the Spoonacular API will be displayed first, followed by any saved recipes. The reset button can be
+            pressed at any time to reset the results to saved recipes only.
+        </p>
+    </div>
 </div>
