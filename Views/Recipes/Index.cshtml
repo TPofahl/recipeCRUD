@@ -11,7 +11,7 @@
     {
         @Html.AntiForgeryToken()
 
-        <div class="form-horizontal">
+        <div>
             <hr />
             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
             <div class="form-group">
@@ -27,42 +27,41 @@
                     <input type="submit" value="Search" class="btn btn-default" />
                 </div>
                 @Html.ActionLink("Reset", "Reset")
+                @Html.ActionLink("Create New", "Create")
             </div>
         </div>
     }
 
-    <h2>Recipes</h2>
-
-    <p>
-        @Html.ActionLink("Create New", "Create")
-    </p>
-    <div class="recipe-area">
-        <div class="recipe-grid">
-            @{int i = 0;}
-            @foreach (var item in Model)
-            {
-                if (i > 0 && i % 2 == 0)
+    <div class="recipe-section">
+        <div class="recipe-area">
+            <div class="recipe-grid">
+                @{int i = 0;}
+                @foreach (var item in Model)
                 {
-                @:</div><div class="recipe-grid">
-                }
-                <div class="recipe-container col-xs-6 col-sm-4">
-                    <img class="recipe-image" src="@Url.Content(item.Image)" width="312" height="231" />
-                    <a class="recipe-container-text">@Html.DisplayFor(modelItem => item.Name)</a>
-                    <div class="btn-container">
-                        @if (item.IsFromApi)
-                        {
-                            <button class="btn-details">@Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
-                        }
-                        else
-                        {
-                            <button class="btn-details">@Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
-                            <button class="btn-edit">@Html.ActionLink("Edit", "Edit", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
-                            <button class="btn-delete">@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "recipe-container-text" })</button>
-                        }
+                    if (i != 0)
+                    {
+                        @:</div><div class="recipe-grid">
+                    }
+
+                    <div class="recipe-container col-xs-6 col-sm-4">
+                        <img class="recipe-image" src="@Url.Content(item.Image)" width="312" height="231" />
+                        <a class="recipe-container-text">@Html.DisplayFor(modelItem => item.Name)</a>
+                        <div class="btn-container">
+                            @if (item.IsFromApi)
+                            {
+                                <button class="btn-details">@Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
+                            }
+                            else
+                            {
+                                <button class="btn-details">@Html.ActionLink("Details", "Details", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
+                                <button class="btn-edit">@Html.ActionLink("Edit", "Edit", new { id = item.Id, spoonacularId = item.SpoonacularId, isFromApi = item.IsFromApi }, new { @class = "recipe-container-text" })</button>
+                                <button class="btn-delete">@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "recipe-container-text" })</button>
+                            }
+                        </div>
                     </div>
-                </div>
-                i++;
-            }
+                    i++;
+                }
+            </div>
         </div>
     </div>
 </div>

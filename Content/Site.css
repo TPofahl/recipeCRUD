@@ -1,11 +1,12 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
-    width: 100vw;
+    max-width: 100vw;
 }
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
+    display: grid;
     color: blue;
     width: 100vw;
 }
@@ -56,7 +57,9 @@ textarea {
 }
 
 .recipe-area {
-    width: 100vw;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 90vw;
     justify-content: space-evenly;
 }
 
@@ -66,6 +69,12 @@ textarea {
 
 .recipe-image {
     border-radius: 10px;
+}
+
+.recipe-section {
+    display: grid;
+    margin-left: 2vw;
+    margin-right: 2vw;
 }
 
 .btn-container {
@@ -116,7 +125,7 @@ textarea {
 .shared-footer {
     bottom: 0;
     position: absolute;
-    width: 100%;
+    width: 100vw;
     color: #10B580;
     background-color: #032D29;
     padding: 10px 0px 4px 4px;
